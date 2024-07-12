@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poyo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <main>
+        <section class="stats-wrapper">
+            <div class="column">
+                <h2>Player Stats:</h2>    
+                <p id="playerHealth"></p>
+                <p id="playerDamage"></p>
+                <p id="playerDefense"></p>
+                <p id="playerCritical"></p>
+                <p id="playerMultistrike"></p>
+                <p id="playerLevel"></p>
+                <p id="exp"></p>
+                <p id="currentGold"></p>
+            </div>
+            <div class="column">
+                <h2 id="monsterTitle">Monster Stats:</h2>
+                <p id="monsterHealth"></p>
+                <p id="monsterDamage"></p>
+                <p id="monsterLevel"></p>     
+            </div>
+        </section>
+        <section class="buttons-wrapper">
+            <button id="damageButton" onclick="increase('damage')"></button>
+            <!-- <button id="regenButton" onclick="increase('regen')"></button> -->
+            <button id="defenseButton" onclick="increase('defense')"></button>
+            <button id="criticalButton" onclick="increase('critical')" hidden></button>
+            <button id="multistrikeButton" onclick="increase('multistrike')" hidden></button>
+            <button id="levelButton" onclick="increaseLevel()">Increase Level</button>
+            <button id="delevelButton" onclick="decreaseLevel()" hidden>Decrease Level</button>
+            <button id="poyoButton" onclick="togglePoyo()">Show Poyo</button>
+            <button id="speedButton" onclick="speedHack()">Speed Hack Off</button>
+        </section>
+        <section class="poyo-gif">
+            <img id="poyo" src="https://media.tenor.com/ijeoIJU8g9AAAAAC/poyo-terminal-montage.gif" hidden />
+        </section>
+    </main>
+    <script src="main.js" charset="utf-8" type="text/javascript"></script>
+</body>
+</html>
