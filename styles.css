@@ -1,0 +1,14 @@
+h2 {
+    font-weight: bold;
+}
+
+.stats-wrapper {
+    display: flex;
+    /* flex-wrap: wrap; */
+    /* gap: 1rem; */
+
+}
+
+.stats-wrapper div {
+    flex-basis: 30%; 
+}
