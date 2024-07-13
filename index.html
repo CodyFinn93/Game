@@ -10,19 +10,25 @@
     <main>
         <section class="stats-wrapper">
             <div>
-                <h2>Player Stats:</h2>    
-                <p id="playerHealth">Health: </p>
+                <h2>Player Stats:</h2>
+                <div class="health-bar">
+                    <div class="health-bar-inner" id="playerHealth" style="width: 100%;"></div>
+                </div>
                 <p id="playerDamage">Damage: </p>
                 <p id="playerDefense">Defense: </p>
                 <p id="playerCritical"></p>
                 <p id="playerMultistrike"></p>
                 <p id="playerLevel">Level: </p>
-                <p id="exp">Experience: </p>
+                <div class="exp-bar">
+                    <div class="exp-bar-inner" id="exp" style="width: 0%;"></div>
+                </div>
                 <p id="currentGold">Gold: </p>
             </div>
             <div>
                 <h2 id="monsterTitle">Monster Stats:</h2>
-                <p id="monsterHealth"></p>
+                <div class="health-bar">
+                    <div class="health-bar-inner" id="monsterHealth" style="width: 100%;"></div>
+                </div>
                 <p id="monsterDamage"></p>
                 <p id="monsterLevel"></p>   
                 <p id="bossTimer" hidden></p>  
@@ -30,7 +36,6 @@
         </section>
         <section class="buttons-wrapper">
             <button id="damageButton" onclick="increase('damage')">Increase Damage</button>
-            <!-- <button id="regenButton" onclick="increase('regen')"></button> -->
             <button id="defenseButton" onclick="increase('defense')">Increase Defense</button>
             <button id="criticalButton" onclick="increase('critical')" hidden></button>
             <button id="multistrikeButton" onclick="increase('multistrike')" hidden></button>
@@ -40,6 +45,7 @@
             <button id="speedButton" onclick="speedHack()">Speed Hack Off</button>
         </section>
         <section class="poyo-gif">
+            <textarea id="log" rows="18" cols="75" readonly></textarea>
             <img id="poyo" src="https://media.tenor.com/ijeoIJU8g9AAAAAC/poyo-terminal-montage.gif" hidden />
         </section>
     </main>

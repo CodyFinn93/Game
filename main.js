@@ -1,10 +1,9 @@
 const gameData = {
-    goldPerKill: 10,
-    damageCost: 10,
-    // regenCost: 10,
-    defenseCost: 10,
-    criticalCost: 1000,
-    multistrikeCost: 100000,
+    goldPerKill: 1,
+    damageCost: 1,
+    defenseCost: 1,
+    criticalCost: 100,
+    multistrikeCost: 10000,
     kills : 0,
     levelUnlocked: 1,
     bossTimer: 0
@@ -20,7 +19,6 @@ const player = {
     maxDmg: 2,
     currentHealth: 10,
     maxHealth: 10,
-    // healthRegen: 0,
     defense: 0,
     critChance: 0,
     critDmg: 2,
@@ -55,49 +53,44 @@ function heal(x) {
     x.currentHealth = x.maxHealth;
 }
 
-// function regenerateHealth() {
-//     if (player.currentHealth > 0) {
-//         if (player.currentHealth + player.healthRegen > player.maxHealth) {
-//             heal(player);
-//         } else {
-//             player.currentHealth += player.healthRegen;
-//         }
-//     }
-// }
+function message(message) {
+    var log = document.getElementById("log");
+    log.value = `${message}\n${log.value}`
+}
 
 function levelUp() {
     if (player.exp >= player.expRequired) {
+        message("Level up!");
         player.level += 1;
         player.exp -= player.expRequired;
         player.expRequired *= 1.5;
         player.minDmg *= 1.5;
         player.maxDmg *= 1.5;
         player.maxHealth *= 1.5;
-        // player.healthRegen += 1;
         heal(player);
     }
     if (player.level >= 10 && player.critChance == 0) {
         player.critChance += 5;
         document.getElementById("criticalButton").removeAttribute("hidden");
-        alert("You unlocked critical strike!");
+        message("You have unlocked critical strike!");
     }
     if (player.level >= 20 && player.multistrikeChance == 0) {
         player.multistrikeChance += 5;
         document.getElementById("multistrikeButton").removeAttribute("hidden");
-        alert("You unlocked multistrike!");
+        message("You have unlocked multistrike!");
     }
 }
 
 function changeMonster() {
     if (monster.isBoss == true) {
         monster.maxHealth = 100 * Math.pow(1.5, monster.level -1);
-        gameData.goldPerKill = 100 * Math.pow(1.6, monster.level -1);
+        gameData.goldPerKill = 10 * Math.pow(1.6, monster.level -1);
         monster.minDmg = 2 * Math.pow(1.5, monster.level -1);
         monster.maxDmg = 4 * Math.pow(1.5, monster.level -1);
         monster.expPerKill = 20 * Math.pow(1.2, monster.level -1);
     } else {
         monster.maxHealth = 10 * Math.pow(1.5, monster.level -1);
-        gameData.goldPerKill = 10 * Math.pow(1.6, monster.level -1);
+        gameData.goldPerKill = Math.pow(1.6, monster.level -1);
         monster.minDmg = Math.pow(1.5, monster.level -1);
         monster.maxDmg = 2 * Math.pow(1.5, monster.level -1);
         monster.expPerKill = Math.pow(1.2, monster.level -1);
@@ -109,6 +102,7 @@ function respawn() {
     if (monster.currentHealth <= 0) {
         player.gold += gameData.goldPerKill;
         player.exp += monster.expPerKill;
+        message("You earned " + Math.round(monster.expPerKill) + " experience and " + Math.round(gameData.goldPerKill) + " gold.");
         if (monster.isBoss) {
             gameData.levelUnlocked += 1;
             monster.isBoss = false;
@@ -140,6 +134,7 @@ function attack(x, y) {
     let health = y.currentHealth;
     if (chance(x.critChance)) {
         damage *= x.critDmg;
+        document.getElementById("log").innerHTML += "Critical strike!\n"
     }
     if (damage > 0 && damage <= health) {
         y.currentHealth -= damage;
@@ -155,11 +150,6 @@ function increase(x) {
         player.gold -= gameData.damageCost;
         gameData.damageCost *= 1.1;
     }
-    // if (x == "regen" && player.gold >= gameData.regenCost) {
-    //     player.healthRegen += 0.2
-    //     player.gold -= gameData.regenCost;
-    //     gameData.regenCost *= 1.1;
-    // }
     if (x == "defense" && player.gold >= gameData.defenseCost) {
         player.defense += 1;
         player.gold -= gameData.defenseCost;
@@ -196,17 +186,27 @@ function decreaseLevel() {
     }
 }
 
+function updateBars(current, maximum, x) { 
+    var percentage = (current / maximum) * 100;
+    switch(x) {
+        case 'player':
+            var bar = document.getElementById('playerHealth');
+            bar.style.width = percentage + '%';
+        case 'monster':
+            var bar = document.getElementById('monsterHealth');
+            bar.style.width = percentage + '%';
+        case 'exp':
+            var bar = document.getElementById('exp');
+            bar.style.width = percentage + '%';
+    }
+}
+
 function buttons() {
     if (player.gold < gameData.damageCost) {
         document.getElementById("damageButton").setAttribute("disabled", "");
     } else {
         document.getElementById("damageButton").removeAttribute("disabled");
     }
-    // if (player.gold < gameData.regenCost) {
-    //     document.getElementById("regenButton").setAttribute("disabled", "");
-    // } else {
-    //     document.getElementById("regenButton").removeAttribute("disabled");
-    // }
     if (player.gold < gameData.defenseCost) {
         document.getElementById("defenseButton").setAttribute("disabled", "");
     } else {
@@ -240,14 +240,14 @@ function buttons() {
 }
 
 function updateGame() {
-    document.getElementById("playerHealth").innerHTML = "Health: " + Math.round(player.currentHealth) + "/" + Math.round(player.maxHealth)// + " + " + (player.healthRegen).toFixed(1) + "/s";
-    document.getElementById("playerDamage").innerHTML = "Damage: " + Math.round(player.minDmg) + "-" + Math.round(player.maxDmg);
-    document.getElementById("playerDefense").innerHTML = "Defense: " + player.defense;
-    document.getElementById("playerLevel").innerHTML = "Level: " + player.level;
-    document.getElementById("exp").innerHTML = "Experience: " + Math.round(player.exp) + "/" + Math.round(player.expRequired);
-    document.getElementById("currentGold").innerHTML = "Gold: " + Math.round(player.gold);
+    document.getElementById("playerHealth").innerHTML = `Health: ${Math.round(player.currentHealth)}/${Math.round(player.maxHealth)}`;
+    document.getElementById("playerDamage").innerHTML = `Damage: ${Math.round(player.minDmg)}-${Math.round(player.maxDmg)}`;
+    document.getElementById("playerDefense").innerHTML = `Defense: ${player.defense}`;
+    document.getElementById("playerLevel").innerHTML = `Level: ${player.level}`;
+    document.getElementById("exp").innerHTML = `Experience: ${Math.round(player.exp)}/${Math.round(player.expRequired)}`;
+    document.getElementById("currentGold").innerHTML = `Gold: ${Math.round(player.gold)}`;
     if (player.critChance > 0) {
-        document.getElementById("playerCritical").innerHTML = "Critical: " + player.critChance + "%";
+        document.getElementById("playerCritical").innerHTML = `Critical: ${player.critChance}%`;
     }
     if (player.multistrikeChance > 0) {
         document.getElementById("playerMultistrike").innerHTML = "Multistrike: " + player.multistrikeChance + "%";
@@ -261,7 +261,6 @@ function updateGame() {
     document.getElementById("monsterDamage").innerHTML = "Damage: " + Math.round(monster.minDmg) + "-" + Math.round(monster.maxDmg);
     document.getElementById("monsterLevel").innerHTML = "Level: " + monster.level;
     document.getElementById("damageButton").innerHTML = "Increase Damage Cost: " + Math.round(gameData.damageCost);
-    // document.getElementById("regenButton").innerHTML = "Increase Regen Cost: " + Math.round(gameData.regenCost);
     document.getElementById("defenseButton").innerHTML = "Increase Defense Cost: " + Math.round(gameData.defenseCost);
     document.getElementById("criticalButton").innerHTML = "Increase Critical Cost: " + Math.round(gameData.criticalCost);
     document.getElementById("multistrikeButton").innerHTML = "Increase Multistrike Cost: " + Math.round(gameData.multistrikeCost);
@@ -278,9 +277,12 @@ function updateGame() {
     } else {
         document.getElementById("bossTimer").setAttribute("hidden", "");
     }
-    respawn();
     buttons();
     levelUp();
+    updateBars(player.currentHealth, player.maxHealth, 'player');
+    updateBars(monster.currentHealth, monster.maxHealth, 'monster');
+    updateBars(player.exp, player.expRequired, 'exp');    
+    respawn();
 }
 
 
@@ -305,6 +307,7 @@ function attackLoop() {
     }, player.attackSpeed);
     if (player.isAlive) {
         if (chance(player.multistrikeChance)) {
+            document.getElementById("log").innerHTML += "Multistrike!\n"
             for (let i = 0; i < player.multistrikeCount; i++) {
                 attack(player, monster);
                 console.log('multistrike ' + (i + 1) + '!');
@@ -335,15 +338,7 @@ function monsterAttackLoop() {
 setTimeout(function () {
     attackLoop();
     monsterAttackLoop();
-    // regenerationLoop();
 }, 1000);
-
-// function regenerationLoop() {
-//     setTimeout(function () {
-//         regenerationLoop();
-//     }, 1000);
-//     regenerateHealth();
-// }
 
 function speedHack() {
     if (player.attackSpeed == 1000) {
