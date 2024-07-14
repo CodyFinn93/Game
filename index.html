@@ -8,30 +8,37 @@
 </head>
 <body>
     <main>
-        <section class="stats-wrapper">
+        <section class="main-wrapper">
             <div>
                 <h2>Player Stats:</h2>
-                <div class="health-bar">
-                    <div class="health-bar-inner" id="playerHealth" style="width: 100%;"></div>
+                <div class="stat-bar health">
+                    <div class="bar-label" id="playerHealth"></div>
+                    <div class="bar-inner health" id="playerHealthBar" style="width: 100%;"></div>
                 </div>
                 <p id="playerDamage">Damage: </p>
                 <p id="playerDefense">Defense: </p>
                 <p id="playerCritical"></p>
                 <p id="playerMultistrike"></p>
                 <p id="playerLevel">Level: </p>
-                <div class="exp-bar">
-                    <div class="exp-bar-inner" id="exp" style="width: 0%;"></div>
+                <div class="stat-bar exp">
+                    <div class="bar-label" id="exp"></div>
+                    <div class="bar-inner exp" id="expBar" style="width: 0%;"></div>
                 </div>
                 <p id="currentGold">Gold: </p>
             </div>
             <div>
                 <h2 id="monsterTitle">Monster Stats:</h2>
-                <div class="health-bar">
-                    <div class="health-bar-inner" id="monsterHealth" style="width: 100%;"></div>
+                <div class="stat-bar health">
+                    <div class="bar-label" id="monsterHealth"></div>
+                    <div class="bar-inner health" id="monsterHealthBar" style="width: 100%;"></div>
                 </div>
                 <p id="monsterDamage"></p>
                 <p id="monsterLevel"></p>   
                 <p id="bossTimer" hidden></p>  
+            </div>
+            <div>
+                <h2>Inventory:</h2>
+                <div id="inventory"></div>
             </div>
         </section>
         <section class="buttons-wrapper">

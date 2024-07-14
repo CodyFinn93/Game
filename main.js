@@ -1,5 +1,4 @@
 const gameData = {
-    goldPerKill: 1,
     damageCost: 1,
     defenseCost: 1,
     criticalCost: 100,
@@ -38,8 +37,44 @@ const monster = {
     defense: 0,
     critChance: 0,
     critDmg: 1,
-    expPerKill: 1
+    expPerKill: 1,
+    goldPerKill: 1
 }
+
+const inventory = [];
+
+function addItem(item) {
+    inventory.push(item);
+}
+
+function removeItem(item) {
+    let index = inventory.indexOf(item);
+    if (index !== -1) {
+        inventory.splice(index, 1);
+    }
+}
+
+const sword = {
+    name: "Sword",
+    type: "Weapon",
+    quantity: 1,
+    damage: 2
+}
+
+addItem(sword);
+
+function renderInventory() {
+    let container = document.getElementById('inventory');
+    container.innerHTML = '';
+
+    inventory.forEach(item => {
+        let itemElement = document.createElement('div');
+        itemElement.textContent = `${item.name}`;
+        container.appendChild(itemElement);
+    });
+}
+
+renderInventory();
 
 function chance(x) {
     return Math.random() + (x / 100) >= 1;
@@ -84,13 +119,13 @@ function levelUp() {
 function changeMonster() {
     if (monster.isBoss == true) {
         monster.maxHealth = 100 * Math.pow(1.5, monster.level -1);
-        gameData.goldPerKill = 10 * Math.pow(1.6, monster.level -1);
+        monster.goldPerKill = 10 * Math.pow(1.6, monster.level -1);
         monster.minDmg = 2 * Math.pow(1.5, monster.level -1);
         monster.maxDmg = 4 * Math.pow(1.5, monster.level -1);
         monster.expPerKill = 20 * Math.pow(1.2, monster.level -1);
     } else {
         monster.maxHealth = 10 * Math.pow(1.5, monster.level -1);
-        gameData.goldPerKill = Math.pow(1.6, monster.level -1);
+        monster.goldPerKill = Math.pow(1.6, monster.level -1);
         monster.minDmg = Math.pow(1.5, monster.level -1);
         monster.maxDmg = 2 * Math.pow(1.5, monster.level -1);
         monster.expPerKill = Math.pow(1.2, monster.level -1);
@@ -100,9 +135,9 @@ function changeMonster() {
 
 function respawn() {
     if (monster.currentHealth <= 0) {
-        player.gold += gameData.goldPerKill;
+        player.gold += monster.goldPerKill;
         player.exp += monster.expPerKill;
-        message("You earned " + Math.round(monster.expPerKill) + " experience and " + Math.round(gameData.goldPerKill) + " gold.");
+        message("You earned " + Math.round(monster.expPerKill) + " experience and " + Math.round(monster.goldPerKill) + " gold.");
         if (monster.isBoss) {
             gameData.levelUnlocked += 1;
             monster.isBoss = false;
@@ -169,10 +204,10 @@ function increase(x) {
 
 function increaseLevel() {
     if (monster.isBoss) {
-        monster.isBoss = false; //Give Up
+        monster.isBoss = false; //Give Up button
     } else if (gameData.kills >= 10 && gameData.levelUnlocked == monster.level) {
         monster.isBoss = true;
-        gameData.bossTimer = 30; //spawns boss and timer 30
+        gameData.bossTimer = 10; //spawns boss and timer 30
     } else if (gameData.levelUnlocked > monster.level) {
         monster.level += 1; //raises level if farming lower levels
     }
@@ -189,19 +224,19 @@ function decreaseLevel() {
 function updateBars(current, maximum, x) { 
     var percentage = (current / maximum) * 100;
     switch(x) {
-        case 'player':
-            var bar = document.getElementById('playerHealth');
+        case 'player': //update player hp bar
+            var bar = document.getElementById('playerHealthBar');
             bar.style.width = percentage + '%';
-        case 'monster':
-            var bar = document.getElementById('monsterHealth');
+        case 'monster': //update monster hp bar
+            var bar = document.getElementById('monsterHealthBar');
             bar.style.width = percentage + '%';
-        case 'exp':
-            var bar = document.getElementById('exp');
+        case 'exp': //update exp bar
+            var bar = document.getElementById('expBar');
             bar.style.width = percentage + '%';
     }
 }
 
-function buttons() {
+function buttons() { //hides and disables buttons
     if (player.gold < gameData.damageCost) {
         document.getElementById("damageButton").setAttribute("disabled", "");
     } else {
