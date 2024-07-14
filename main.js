@@ -45,6 +45,7 @@ const inventory = [];
 
 function addItem(item) {
     inventory.push(item);
+    renderInventory();
 }
 
 function removeItem(item) {
@@ -58,7 +59,8 @@ const sword = {
     name: "Sword",
     type: "Weapon",
     quantity: 1,
-    damage: 2
+    damage: 2,
+    equipped: false
 }
 
 addItem(sword);
@@ -69,12 +71,27 @@ function renderInventory() {
 
     inventory.forEach(item => {
         let itemElement = document.createElement('div');
+        let itemButton = document.createElement('button');
+        itemButton.addEventListener("click", () => {toggleEquip(item)})
         itemElement.textContent = `${item.name}`;
+        if (!item.equipped) {
+            itemButton.textContent = "Equip"
+        } else {
+            itemButton.textContent = "Unequip"
+        }
         container.appendChild(itemElement);
+        container.appendChild(itemButton);
     });
 }
 
-renderInventory();
+function toggleEquip(item) {
+    if (!item.equipped) {
+        item.equipped = true;
+    } else {
+        item.equipped = false;
+    }
+    renderInventory();
+}
 
 function chance(x) {
     return Math.random() + (x / 100) >= 1;
@@ -144,15 +161,15 @@ function respawn() {
             monster.level += 1;
             gameData.kills = 0;
         }
-        changeMonster();
         if (gameData.levelUnlocked == monster.level && gameData.kills < 10) {
             gameData.kills += 1;
         }
+        changeMonster();
     }
     if (player.currentHealth <= 0) {
         player.isAlive = false;
     }
-    if (!player.isAlive) {
+    if (!player.isAlive) { //slowly regenerates player life after they die
         if (player.currentHealth < player.maxHealth) {
             player.currentHealth += (player.maxHealth * 0.05)
             if (player.currentHealth > player.maxHealth) {
@@ -236,81 +253,51 @@ function updateBars(current, maximum, x) {
     }
 }
 
-function buttons() { //hides and disables buttons
-    if (player.gold < gameData.damageCost) {
-        document.getElementById("damageButton").setAttribute("disabled", "");
-    } else {
-        document.getElementById("damageButton").removeAttribute("disabled");
-    }
-    if (player.gold < gameData.defenseCost) {
-        document.getElementById("defenseButton").setAttribute("disabled", "");
-    } else {
-        document.getElementById("defenseButton").removeAttribute("disabled");
-    }
-    if (player.gold < gameData.criticalCost) {
-        document.getElementById("criticalButton").setAttribute("disabled", "");
-    } else {
-        document.getElementById("criticalButton").removeAttribute("disabled");
-    }
-    if (player.gold < gameData.multistrikeCost) {
-        document.getElementById("multistrikeButton").setAttribute("disabled", "");
-    } else {
-        document.getElementById("multistrikeButton").removeAttribute("disabled");
-    }
-    if (monster.level == gameData.levelUnlocked && gameData.kills < 10) {
-        document.getElementById("levelButton").setAttribute("disabled", "");
-    } else {
-        document.getElementById("levelButton").removeAttribute("disabled")
-    }
-    if (monster.isBoss) {
-        document.getElementById("delevelButton").setAttribute("disabled", "");
-    } else {
-        document.getElementById("delevelButton").removeAttribute("disabled");
-    }
-    if (monster.level == 1) {
-        document.getElementById("delevelButton").setAttribute("hidden", "");
-    } else {
-        document.getElementById("delevelButton").removeAttribute("hidden");
-    }
+function buttons() { //hides or disables buttons
+    let damageButton = document.getElementById("damageButton");
+    let defenseButton = document.getElementById("defenseButton");
+    let criticalButton = document.getElementById("criticalButton");
+    let multistrikeButton = document.getElementById("multistrikeButton");
+    let levelButton = document.getElementById("levelButton");
+    let delevelButton = document.getElementById("delevelButton");
+    player.gold < gameData.damageCost ? damageButton.setAttribute("disabled", "") : damageButton.removeAttribute("disabled");
+    player.gold < gameData.defenseCost ? defenseButton.setAttribute("disabled", "") : defenseButton.removeAttribute("disabled");
+    player.gold < gameData.criticalCost ? criticalButton.setAttribute("disabled", "") : criticalButton.removeAttribute("disabled");
+    player.gold < gameData.multistrikeCost ? multistrikeButton.setAttribute("disabled", "") : multistrikeButton.removeAttribute("disabled");
+    monster.level == gameData.levelUnlocked && gameData.kills < 10 ? levelButton.setAttribute("disabled", "") : levelButton.removeAttribute("disabled");
+    monster.isBoss ? delevelButton.setAttribute("disabled", "") : delevelButton.removeAttribute("disabled");
+    monster.level == 1 ? delevelButton.setAttribute("hidden", "") : delevelButton.removeAttribute("hidden");
 }
 
 function updateGame() {
     document.getElementById("playerHealth").innerHTML = `Health: ${Math.round(player.currentHealth)}/${Math.round(player.maxHealth)}`;
     document.getElementById("playerDamage").innerHTML = `Damage: ${Math.round(player.minDmg)}-${Math.round(player.maxDmg)}`;
     document.getElementById("playerDefense").innerHTML = `Defense: ${player.defense}`;
+    document.getElementById("playerCritical").innerHTML = `Critical: ${player.critChance}%`;
+    document.getElementById("playerMultistrike").innerHTML = "Multistrike: " + player.multistrikeChance + "%";
     document.getElementById("playerLevel").innerHTML = `Level: ${player.level}`;
     document.getElementById("exp").innerHTML = `Experience: ${Math.round(player.exp)}/${Math.round(player.expRequired)}`;
-    document.getElementById("currentGold").innerHTML = `Gold: ${Math.round(player.gold)}`;
-    if (player.critChance > 0) {
-        document.getElementById("playerCritical").innerHTML = `Critical: ${player.critChance}%`;
-    }
-    if (player.multistrikeChance > 0) {
-        document.getElementById("playerMultistrike").innerHTML = "Multistrike: " + player.multistrikeChance + "%";
-    }
-    if (monster.isBoss) {
-        document.getElementById("monsterTitle").innerHTML = "Boss Stats:";
-    } else {
-        document.getElementById("monsterTitle").innerHTML = "Monster Stats:";
-    }
+    document.getElementById("currentGold").innerHTML = `Gold: ${Math.round(player.gold)}`;    
     document.getElementById("monsterHealth").innerHTML = "Health: " + Math.round(monster.currentHealth) + "/" + Math.round(monster.maxHealth);
     document.getElementById("monsterDamage").innerHTML = "Damage: " + Math.round(monster.minDmg) + "-" + Math.round(monster.maxDmg);
     document.getElementById("monsterLevel").innerHTML = "Level: " + monster.level;
     document.getElementById("damageButton").innerHTML = "Increase Damage Cost: " + Math.round(gameData.damageCost);
     document.getElementById("defenseButton").innerHTML = "Increase Defense Cost: " + Math.round(gameData.defenseCost);
     document.getElementById("criticalButton").innerHTML = "Increase Critical Cost: " + Math.round(gameData.criticalCost);
-    document.getElementById("multistrikeButton").innerHTML = "Increase Multistrike Cost: " + Math.round(gameData.multistrikeCost);
-    if (monster.isBoss) {
-        document.getElementById("levelButton").innerHTML = "Give Up"
-    } else if (gameData.levelUnlocked == monster.level) {
-        document.getElementById("levelButton").innerHTML = "Fight Boss Kills: " + gameData.kills + "/10";
-    } else {
-        document.getElementById("levelButton").innerHTML = "Increase Level";
-    }
+    document.getElementById("multistrikeButton").innerHTML = "Increase Multistrike Cost: " + Math.round(gameData.multistrikeCost); 
     if (monster.isBoss) {
         document.getElementById("bossTimer").removeAttribute("hidden")
         document.getElementById("bossTimer").innerHTML = "Time Remaining: " + gameData.bossTimer;
+        document.getElementById("levelButton").innerHTML = "Give Up"
+        document.getElementById("monsterTitle").innerHTML = "Boss Stats:";
     } else {
+        document.getElementById("monsterTitle").innerHTML = "Monster Stats:";
         document.getElementById("bossTimer").setAttribute("hidden", "");
+        if (gameData.levelUnlocked == monster.level) {
+            document.getElementById("levelButton").innerHTML = "Fight Boss Kills: " + gameData.kills + "/10";
+        } else {
+            document.getElementById("levelButton").innerHTML = "Increase Level";
+        }
     }
     buttons();
     levelUp();
