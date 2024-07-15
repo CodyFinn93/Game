@@ -48,3 +48,7 @@ h2 {
 .bar-inner.exp {
     background-color: blue;
 }
+
+textarea {
+    resize: none;
+}

@@ -16,7 +16,7 @@
                     <div class="bar-inner health" id="playerHealthBar" style="width: 100%;"></div>
                 </div>
                 <p id="playerDamage">Damage: </p>
-                <p id="playerDefense">Defense: </p>
+                <p id="playerDefense" hidden>Defense: </p>
                 <p id="playerCritical" hidden></p>
                 <p id="playerMultistrike" hidden></p>
                 <p id="playerLevel">Level: </p>
@@ -42,10 +42,6 @@
             </div>
         </section>
         <section class="buttons-wrapper">
-            <button id="damageButton" onclick="increase('damage')">Increase Damage</button>
-            <button id="defenseButton" onclick="increase('defense')">Increase Defense</button>
-            <button id="criticalButton" onclick="increase('critical')" hidden></button>
-            <button id="multistrikeButton" onclick="increase('multistrike')" hidden></button>
             <button id="levelButton" onclick="increaseLevel()">Increase Level</button>
             <button id="delevelButton" onclick="decreaseLevel()" hidden>Decrease Level</button>
             <button id="poyoButton" onclick="togglePoyo()">Show Poyo</button>
