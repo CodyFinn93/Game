@@ -1,3 +1,13 @@
+// import { chance, roll, heal, message, changeMonster } from './utils.js';
+
+
+
+
+
+
+
+
+
 const gameData = {
     damageCost: 1,
     defenseCost: 1,
@@ -30,10 +40,10 @@ const monster = {
     isAlive: true,
     isBoss: false,
     level: 1,
-    minDmg: 1,
-    maxDmg: 2,
-    currentHealth: 10,
-    maxHealth: 10,
+    minDmg: 0,
+    maxDmg: 1,
+    currentHealth: 4,
+    maxHealth: 4,
     defense: 0,
     critChance: 0,
     critDmg: 1,
@@ -152,9 +162,9 @@ function renderStats() {
         player.expRequired *= 1.5;
         heal(player);
     }
-    player.minDmg = Math.pow(1.5, player.level -1) + (getWeaponDamage());
-    player.maxDmg = 2 * Math.pow(1.5, player.level -1) + (getWeaponDamage());
-    player.maxHealth = 10 * Math.pow(1.5, player.level -1);
+    player.minDmg = Math.pow(1.2, player.level -1) + (getWeaponDamage());
+    player.maxDmg = 2 * Math.pow(1.2, player.level -1) + (getWeaponDamage());
+    player.maxHealth = 10 * Math.pow(1.4, player.level -1);
     player.defense = (getArmorDefense());
     if (player.level >= 10 && player.critChance == 0) {
         player.critChance += 5;
@@ -167,7 +177,7 @@ function renderStats() {
 }
 
 function chance(x) {
-    return Math.random() + (x / 100) >= 1;
+    return Math.random() < (x / 100);
 }
 
 function roll(min, max) {
@@ -175,7 +185,6 @@ function roll(min, max) {
 }
 
 function heal(x) {
-    x.maxHealth = 10 * Math.pow(1.5, x.level -1); //fixes bug :(
     x.currentHealth = x.maxHealth;
 }
 
@@ -185,26 +194,31 @@ function message(message) {
 }
 
 function changeMonster() {
-    if (monster.isBoss == true) {
-        monster.maxHealth = 100 * Math.pow(1.5, monster.level -1);
-        monster.goldPerKill = 10 * Math.pow(1.6, monster.level -1);
-        monster.minDmg = 2 * Math.pow(1.5, monster.level -1);
-        monster.maxDmg = 4 * Math.pow(1.5, monster.level -1);
-        monster.expPerKill = 20 * Math.pow(1.2, monster.level -1);
-    } else {
-        monster.maxHealth = 10 * Math.pow(1.5, monster.level -1);
-        monster.goldPerKill = Math.pow(1.6, monster.level -1);
-        monster.minDmg = Math.pow(1.5, monster.level -1);
-        monster.maxDmg = 2 * Math.pow(1.5, monster.level -1);
-        monster.expPerKill = Math.pow(1.2, monster.level -1);
+    monster.maxHealth = 4 * Math.pow(1.5, monster.level -1);
+    monster.goldPerKill = Math.pow(1.5, monster.level -1);
+    monster.minDmg = Math.pow(1.6, monster.level -1) -1;
+    monster.maxDmg = 2 * Math.pow(1.6, monster.level -1) -1;
+    monster.expPerKill = Math.pow(1.5, monster.level -1);
+
+    if (monster.isBoss) {
+        monster.maxHealth *= 20;
+        monster.goldPerKill *= 30;
+        monster.minDmg *= 5;
+        monster.maxDmg *= 5;
+        monster.expPerKill *= 30;
     }
+
     heal(monster);
 }
 
 function reward() {
-    player.gold += monster.goldPerKill;
-    player.exp += monster.expPerKill;
-    message(`You earned ${Math.round(monster.expPerKill)} experience and ${Math.round(monster.goldPerKill)} gold.`);
+    let experience = monster.expPerKill * ((monster.level - player.level + 5) / 5);
+    experience < 0 ? experience = 0 : null;
+    let gold = monster.goldPerKill;
+    player.level - monster.level >= 5 ? gold = 0 : null;
+    player.gold += gold;
+    player.exp += experience;
+    message(`You earned ${experience < 10 ? Math.round(experience * 10) / 10 : Math.round(experience)} experience and ${Math.round(gold)} gold.`);
     if (chance(5) && inventory.length < 5) {
         addItem(createWeapon("Sword", "Weapon", 1, 1, 2 * monster.level, false));
         message("You found a sword!");
