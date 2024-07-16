@@ -52,3 +52,12 @@ h2 {
 textarea {
     resize: none;
 }
+
+.tooltip {
+    position: absolute;
+    background-color: #333;
+    color: white;
+    padding: 5px;
+    border-radius: 5px;
+    display: none;
+}

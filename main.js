@@ -105,6 +105,25 @@ function renderInventory() {
         let itemElement = document.createElement('div');
         let itemButton = document.createElement('button');
         let deleteButton = document.createElement('button');
+        let tooltip = document.createElement('div');
+        tooltip.setAttribute("class", "tooltip");
+        tooltip.textContent += `${item.type} level: ${item.level} | `
+        if (item.type == "Weapon") {
+            tooltip.textContent += `Damage: ${item.damage}`;
+        } else {
+            tooltip.textContent += `Defense: ${item.defense}`;
+        }
+        itemElement.addEventListener('mouseover', function() {
+            // Position and show the tooltip
+            const elementRect = itemElement.getBoundingClientRect();
+            tooltip.style.top = `${elementRect.bottom}px`; // Position below the element
+            tooltip.style.left = `${elementRect.left}px`; // Align with the left edge of the element
+            tooltip.style.display = 'block'; // Show the tooltip
+        });
+        itemElement.addEventListener('mouseout', function() {
+            // Hide the tooltip
+            tooltip.style.display = 'none';
+        });
         itemButton.addEventListener("click", () => {toggleEquip(item)});
         deleteButton.addEventListener("click", () => {removeItem(item)});
         itemElement.textContent = `${item.name}`;
@@ -117,6 +136,7 @@ function renderInventory() {
         container.appendChild(itemElement);
         container.appendChild(itemButton);
         container.appendChild(deleteButton);
+        container.appendChild(tooltip);
     });
 }
 
