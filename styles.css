@@ -14,6 +14,11 @@ h2 {
     /* gap: 1rem; */
 }
 
+.buttons-wrapper, .log-wrapper {
+    display: flex;
+    /* width: 600px; */
+}
+
 .main-wrapper div {
     flex-basis: 30%;
 }

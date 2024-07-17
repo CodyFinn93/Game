@@ -1,13 +1,3 @@
-// import { chance, roll, heal, message, changeMonster } from './utils.js';
-
-
-
-
-
-
-
-
-
 const gameData = {
     damageCost: 1,
     defenseCost: 1,
@@ -19,6 +9,7 @@ const gameData = {
 }
 
 const player = {
+    name: "player",
     isAlive: true,
     level: 1,
     exp: 0,
@@ -37,6 +28,7 @@ const player = {
 }
 
 const monster = {
+    name: "monster",
     isAlive: true,
     isBoss: false,
     level: 1,
@@ -52,49 +44,134 @@ const monster = {
 }
 
 class weaponObject {
-    constructor(name, type, level, quantity, damage, equipped) {
+    constructor(name, type, level, quantity, damage, equipped, rarity, cost) {
         this.name = name;
         this.type = type;
         this.level = level;
         this.quantity = quantity;
         this.damage = damage;
         this.equipped = equipped;
+        this.rarity = rarity;
+        this.cost = cost;
     }
 }
 
 class armorObject {
-    constructor(name, type, level, quantity, defense, equipped) {
+    constructor(name, type, level, quantity, defense, equipped, rarity, cost) {
         this.name = name;
         this.type = type;
         this.level = level;
         this.quantity = quantity;
         this.defense = defense;
         this.equipped = equipped;
+        this.rarity = rarity;
+        this.cost = cost;
     }
 }
 
 // Function to create objects with different attributes
 function createWeapon(name, type, level, quantity, damage, equipped) {
-    return new weaponObject(name, type, level, quantity, damage, equipped);
+    itemRarity = rollRarity();
+    multiplier = rarityMultiplier(itemRarity);
+    cost = monster.goldPerKill * 100 * multiplier;
+    return new weaponObject(name, type, level, quantity, damage * multiplier, equipped, itemRarity, cost);
 }
 
 function createArmor(name, type, level, quantity, defense, equipped) {
-    return new armorObject(name, type, level, quantity, defense, equipped);
+    itemRarity = rollRarity();
+    multiplier = rarityMultiplier(itemRarity);
+    cost = monster.goldPerKill * 100 * multiplier;
+    return new armorObject(name, type, level, quantity, defense * multiplier, equipped, itemRarity, cost);
 }
 
 const inventory = [];
+const shop = [];
 
-function addItem(item) {
-    inventory.push(item);
+function buyItem(item, x) {
+    x.push(item);
+    renderInventory();
+    player.gold -= (item.cost);
+}
+
+function addItem(item, x) {
+    x.push(item);
     renderInventory();
 }
 
-function removeItem(item) {
-    let index = inventory.indexOf(item);
+function removeItem(item, x) {
+    let index = x.indexOf(item);
     if (index !== -1) {
-        inventory.splice(index, 1);
+        x.splice(index, 1);
     }
     renderInventory();
+}
+
+function rollRarity() {
+    if (chance(1)) {
+        return "Legendary"
+    } else if (chance(10)) {
+        return "Rare"
+    } else if (chance(25)) {
+        return "Uncommon"
+    } else {
+        return "Common"
+    }
+}
+
+function rarityMultiplier(rarity) {
+    switch(rarity) {
+        case 'Legendary':
+            return 5;
+        case 'Rare':
+            return 2;
+        case 'Uncommon':
+            return 1.5;
+        case 'Common':
+            return 1;
+    }
+}
+
+function renderShop() {
+    let container = document.getElementById('shop');
+    container.innerHTML = '';
+    shop.length = 0;
+    addItem(createWeapon("Sword", "Weapon", monster.level, 1, 4 * monster.level, false), shop);
+    addItem(createArmor("Armor", "Armor", monster.level, 1, 2 * monster.level, false), shop);
+
+    shop.forEach(item => {
+        let itemElement = document.createElement('div');
+        let buyButton = document.createElement('button');
+        let tooltip = document.createElement('div');
+        if (item.type == "Weapon") {
+            buyButton.setAttribute("id", "buyWeapon")
+        } else {
+            buyButton.setAttribute("id", "buyArmor")
+        }
+        tooltip.setAttribute("class", "tooltip");
+        tooltip.textContent += `${item.rarity} ${item.type} level: ${item.level} | `
+        if (item.type == "Weapon") {
+            tooltip.textContent += `Damage: ${item.damage}`;
+        } else {
+            tooltip.textContent += `Defense: ${item.defense}`;
+        }
+        itemElement.addEventListener('mouseover', function() {
+            // Position and show the tooltip
+            const elementRect = itemElement.getBoundingClientRect();
+            tooltip.style.top = `${elementRect.bottom}px`; // Position below the element
+            tooltip.style.left = `${elementRect.left}px`; // Align with the left edge of the element
+            tooltip.style.display = 'block'; // Show the tooltip
+        });
+        itemElement.addEventListener('mouseout', function() {
+            // Hide the tooltip
+            tooltip.style.display = 'none';
+        });
+        buyButton.addEventListener("click", () => {buyItem(item, inventory)});
+        itemElement.textContent = `${item.name}`;
+        buyButton.textContent = `Buy Cost: ${item.cost}`;
+        container.appendChild(itemElement);
+        container.appendChild(buyButton);
+        container.appendChild(tooltip);
+    });
 }
 
 function renderInventory() {
@@ -107,7 +184,7 @@ function renderInventory() {
         let deleteButton = document.createElement('button');
         let tooltip = document.createElement('div');
         tooltip.setAttribute("class", "tooltip");
-        tooltip.textContent += `${item.type} level: ${item.level} | `
+        tooltip.textContent += `${item.rarity} ${item.type} level: ${item.level} | `
         if (item.type == "Weapon") {
             tooltip.textContent += `Damage: ${item.damage}`;
         } else {
@@ -125,7 +202,7 @@ function renderInventory() {
             tooltip.style.display = 'none';
         });
         itemButton.addEventListener("click", () => {toggleEquip(item)});
-        deleteButton.addEventListener("click", () => {removeItem(item)});
+        deleteButton.addEventListener("click", () => {removeItem(item, inventory)});
         itemElement.textContent = `${item.name}`;
         if (!item.equipped) {
             itemButton.textContent = "Equip";
@@ -175,13 +252,6 @@ function getArmorDefense() {
 }
 
 function renderStats() {
-    if (player.exp >= player.expRequired) {
-        message("Level up!");
-        player.level += 1;
-        player.exp -= player.expRequired;
-        player.expRequired *= 1.5;
-        heal(player);
-    }
     player.minDmg = Math.pow(1.2, player.level -1) + (getWeaponDamage());
     player.maxDmg = 2 * Math.pow(1.2, player.level -1) + (getWeaponDamage());
     player.maxHealth = 10 * Math.pow(1.4, player.level -1);
@@ -201,7 +271,7 @@ function chance(x) {
 }
 
 function roll(min, max) {
-    return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min) + 1) + Math.ceil(min));
+    return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min) + 1)) + Math.ceil(min);
 }
 
 function heal(x) {
@@ -221,30 +291,42 @@ function changeMonster() {
     monster.expPerKill = Math.pow(1.5, monster.level -1);
 
     if (monster.isBoss) {
-        monster.maxHealth *= 20;
-        monster.goldPerKill *= 30;
+        monster.maxHealth *= 10;
+        monster.goldPerKill *= 20;
         monster.minDmg *= 5;
         monster.maxDmg *= 5;
-        monster.expPerKill *= 30;
+        monster.expPerKill *= 20;
     }
 
     heal(monster);
 }
 
+function levelUp() {
+    if (player.exp >= player.expRequired) {
+        message("Level up!");
+        player.level += 1;
+        player.exp -= player.expRequired;
+        player.expRequired *= 1.5;
+        renderStats();
+        heal(player);
+    }
+}
+
 function reward() {
-    let experience = monster.expPerKill * ((monster.level - player.level + 5) / 5);
+    let experience = monster.expPerKill * ((monster.level - player.level + 10) / 10);
     experience < 0 ? experience = 0 : null;
     let gold = monster.goldPerKill;
-    player.level - monster.level >= 5 ? gold = 0 : null;
+    player.level - monster.level >= 10 ? gold = 0 : null;
     player.gold += gold;
     player.exp += experience;
     message(`You earned ${experience < 10 ? Math.round(experience * 10) / 10 : Math.round(experience)} experience and ${Math.round(gold)} gold.`);
-    if (chance(5) && inventory.length < 5) {
-        addItem(createWeapon("Sword", "Weapon", 1, 1, 2 * monster.level, false));
+    levelUp();
+    if (chance(1) && inventory.length < 5) {
+        addItem(createWeapon("Sword", "Weapon", monster.level, 1, 4 * monster.level, false), inventory);
         message("You found a sword!");
     }
-    if (chance(5) && inventory.length < 5) {
-        addItem(createArmor("Armor", "Armor", 1, 1, monster.level, false));
+    if (chance(1) && inventory.length < 5) {
+        addItem(createArmor("Armor", "Armor", monster.level, 1, 2 * monster.level, false), inventory);
         message("You found armor!");
     }
 }
@@ -256,6 +338,7 @@ function respawn() {
             monster.isBoss = false;
             monster.level += 1;
             gameData.kills = 0;
+            renderShop();
         }
 
         if (gameData.levelUnlocked == monster.level && gameData.kills < 10) {
@@ -303,6 +386,7 @@ function increaseLevel() {
         gameData.bossTimer = 10; //spawns boss and timer 30
     } else if (gameData.levelUnlocked > monster.level) {
         monster.level += 1; //raises level if farming lower levels
+        renderShop();
     }
     changeMonster();
 }
@@ -335,6 +419,8 @@ function buttons() { //hides or disables buttons
     let playerDefense = document.getElementById("playerDefense");
     let playerCritical = document.getElementById("playerCritical");
     let playerMultistrike = document.getElementById("playerMultistrike");
+    let buyWeapon = document.getElementById("buyWeapon");
+    let buyArmor = document.getElementById("buyArmor");
 
     monster.level == gameData.levelUnlocked && gameData.kills < 10 ? levelButton.setAttribute("disabled", "") : levelButton.removeAttribute("disabled");
     monster.isBoss ? delevelButton.setAttribute("disabled", "") : delevelButton.removeAttribute("disabled");
@@ -343,6 +429,8 @@ function buttons() { //hides or disables buttons
     player.defense ? playerDefense.removeAttribute("hidden") : playerDefense.setAttribute("hidden", "");
     player.critChance ? playerCritical.removeAttribute("hidden") : playerCritical.setAttribute("hidden", "");
     player.multistrikeChance ? playerMultistrike.removeAttribute("hidden") : playerMultistrike.setAttribute("hidden", "");
+    player.gold >= (shop[0].cost) ? buyWeapon.removeAttribute("disabled") : buyWeapon.setAttribute("disabled", "");
+    player.gold >= (shop[1].cost) ? buyArmor.removeAttribute("disabled") : buyArmor.setAttribute("disabled", "");
 }
 
 function updateGame() {
@@ -451,3 +539,5 @@ function speedHack() {
         document.getElementById("speedButton").innerHTML = "Speed Hack Off"
     }
 }
+
+renderShop();
